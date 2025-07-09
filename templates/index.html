@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中南民大智能助手</title>
+    <link rel="icon" href="static/image/scuec_logo.ico" type="image/x-icon">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6c91c0;
+            --accent-color: #ff6b6b;
+            --light-color: #f5f7fa;
+            --dark-color: #2c3e50;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --border-radius: 16px;
+        }
+
+        body {
+        background: url('static/image/background.jpg') no-repeat center center fixed;
+        background-size: cover;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        overflow: hidden;
+    }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95); 
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;  /* 移除阴影避免视觉上的边距感 */
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            border: none;
+        }
+
+        aside {
+            width: 200px;
+            background: rgba(245, 247, 250, 0.85);
+            border-right: 1px solid rgba(234, 234, 234, 0.6);
+            padding: 20px 0;
+            border: 2px solid var(--primary-color); /* 添加边框 */
+            border-radius: var(--border-radius); /* 添加圆角 */
+            margin: 10px; /* 添加外边距 */
+            box-shadow: var(--shadow); /* 添加阴影 */
+        }
+
+        .function-btn {
+            width: 100%;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            border-left: 4px solid transparent;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .function-btn:hover {
+            background: rgba(234, 236, 240, 0.85);
+        }
+
+        .function-btn.active {
+            border-left-color: var(--primary-color);
+            background: rgba(224, 228, 235, 0.85);
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            padding: 0;
+        }
+
+        .function-section {
+            display: none;
+            height: 100%;
+        }
+
+        .function-section.active {
+            display: block;
+        }
+        
+        .chat-iframe {
+            width: 100%;
+            height: calc(100vh - 20px); /* 减去可能的边距 */
+            border: none;
+            display: block; /* 确保作为块级元素显示 */
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <aside>
+            <button class="function-btn active" data-target="chat">聊天</button>
+            <button class="function-btn" data-target="map">地图</button>
+            <button class="function-btn" data-target="about">关于我们</button>
+        </aside>
+
+        <div class="content">
+            <div id="chat" class="function-section active">
+                <iframe 
+                    src="/chat" 
+                    frameborder="0" 
+                    class="chat-iframe"
+                    title="AI智能问答助手-小塔聊天界面"
+                ></iframe>
+            </div>
+            <div id="welcome" class="function-section">
+                <div style="padding: 20px;">
+                    <h1>欢迎使用校园助手</h1>
+                    <p>我是小塔，您的专属校园助手，可以回答任何问题，帮助您更快适应校园生活！</p>
+                    <div class="examples-container">
+                        <div class="example">
+                            <div class="example-title">学院信息查询</div>
+                            <div class="example-content">电子信息工程学院的课本领取地点在哪里？</div>
+                        </div>
+                        <div class="example">
+                            <div class="example-title">天气咨询</div>
+                            <div class="example-content">明天武汉的天气怎么样？适合户外活动吗？</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="map" class="function-section">
+                <iframe 
+                    src="/map" 
+                    frameborder="0" 
+                    style="width: 100%; height: 100%; border: none;"
+                    title="校园地图"
+                ></iframe>
+            </div>
+
+            <div id="about" class="function-section">
+                <iframe 
+                    src="/about" 
+                    frameborder="0" 
+                    style="width: 100%; height: 100%; border: none;"
+                    title="关于我们"
+                ></iframe>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 功能切换逻辑
+        document.querySelectorAll('.function-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // 移除所有按钮的 active 类
+                document.querySelectorAll('.function-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                // 为当前点击按钮添加 active 类
+                this.classList.add('active');
+
+                const targetId = this.getAttribute('data-target');
+                // 隐藏所有功能区
+                document.querySelectorAll('.function-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                // 显示当前选中的功能区
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

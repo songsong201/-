@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中南民族大学 - 校园地图</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36B37E',
+            neutral: '#e0f2fe',
+            dark: '#1D2129'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .map-marker {
+        @apply absolute w-5 h-5 rounded-full border-2 border-white shadow-lg transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:scale-125 z-10;
+      }
+      .map-marker::after {
+        content: '';
+        @apply absolute w-full h-full rounded-full bg-primary/50 animate-ping;
+      }
+      .tooltip {
+        @apply invisible absolute bg-white shadow-xl rounded-lg p-2 w-48 z-20 transition-all duration-300 opacity-0 transform translate-y-2;
+      }
+      .marker-container:hover .tooltip {
+        @apply visible opacity-100 translate-y-0;
+      }
+      .modal-backdrop {
+        @apply fixed inset-0 bg-black/70 z-40 flex items-center justify-center opacity-0 invisible transition-opacity duration-300;
+      }
+      .modal-backdrop.active {
+        @apply opacity-100 visible;
+      }
+      .modal-content {
+        @apply bg-white rounded-xl overflow-hidden max-w-3xl w-full max-h-[80vh] transform scale-95 transition-transform duration-300;
+      }
+      .modal-backdrop.active .modal-content {
+        @apply scale-100;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-inter text-dark min-h-screen flex flex-col bg-gradient-to-b from-green-300 to-white">
+  <!-- 顶部导航栏（优化z-index） -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-map-marker text-primary text-2xl"></i>
+        <h1 class="text-xl font-bold text-primary">中南民族大学校园地图</h1>
+      </div>
+      
+      <nav class="hidden md:flex items-center space-x-6">
+        <a href="#" class="text-primary font-medium hover:text-primary/80 transition-colors">首页</a>
+        <a href="#" class="text-dark/70 hover:text-primary transition-colors">校园简介</a>
+        <a href="#" class="text-dark/70 hover:text-primary transition-colors">建筑列表</a>
+        <a href="#" class="text-dark/70 hover:text-primary transition-colors">联系我们</a>
+      </nav>
+      
+      <button class="md:hidden text-dark text-xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+<!-- 标题与3D按钮区域（顶部居中布局） -->
+<div class="container mx-auto px-4 py-4">
+  <div class="flex flex-col items-center">
+    <div class="rounded-xl p-0 flex items-center justify-start space-x-4 mb-6">
+      <img src="static/image/scuec.png" alt="中南民族大学校徽" class="h-[clamp(2.5rem,5vw,5rem)] w-auto object-contain rounded-full">
+      <div>
+        <h2 class="text-[clamp(1.0rem,2vw,1.5rem)] font-bold text-cyan-700 mb-1">探索我们的校园</h2>
+        <p class="text-sm text-cyan-700/70">中南民族大学校园导览</p>
+      </div>
+    </div>
+    
+    <!-- 3D按钮顶部居中显示 -->
+    <div class="w-full max-w-md">
+      <a href="https://wfw.scuec.edu.cn/xyvr/" target="_blank" class="flex items-center justify-center w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-full shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1">
+        <i class="fa fa-vr-cardboard mr-2"></i>
+        <span>进入3D校园世界</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+ <!-- 主内容区（左右分栏） -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row gap-8">
+      <!-- 左侧内容区 - 主要建筑列表 -->
+      <div class="w-full md:w-1/4 space-y-8">
+        <div class="bg-white rounded-xl  shadow-md p-1">
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fa fa-building text-primary mr-2"></i>
+            主要建筑物列表
+          </h3>
+          
+          <div class="grid grid-cols-1 gap-4">
+            <!-- 11号楼 -->
+            <div class="p-2 transition-shadow cursor-pointer group building-item" data-name="11号楼">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded bg-primary/10 flex items-center justify-center text-primary">
+                  <i class="fa fa-university text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium group-hover:text-primary transition-colors">11号楼</h4>
+                  <p class="text-xs text-dark/60">主要教学楼，设有多媒体教室和阶梯教室</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 9号楼 -->
+            <div class="p-2 transition-shadow cursor-pointer group building-item" data-name="9号楼">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded bg-primary/10 flex items-center justify-center text-primary">
+                  <i class="fa fa-university text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium group-hover:text-primary transition-colors">9号楼</h4>
+                  <p class="text-xs text-dark/60">综合性教学楼，计算机学院和数统学院办公地点</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 图书馆 -->
+            <div class="p-2 transition-shadow cursor-pointer group building-item" data-name="图书馆">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded bg-purple-500/10 flex items-center justify-center text-purple-500">
+                  <i class="fa fa-book text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium group-hover:text-purple-500 transition-colors">图书馆</h4>
+                  <p class="text-xs text-dark/60">馆藏丰富，提供自习和阅读空间</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 体育馆 -->
+            <div class="p-2 transition-shadow cursor-pointer group building-item" data-name="体育馆">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded bg-red-500/10 flex items-center justify-center text-red-500">
+                  <i class="fa fa-futbol-o text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium group-hover:text-red-500 transition-colors">体育馆</h4>
+                  <p class="text-xs text-dark/60">包含篮球场、羽毛球场和健身区域</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 南区宿舍 -->
+            <div class="p-2 transition-shadow cursor-pointer group building-item" data-name="南区宿舍">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded bg-secondary/10 flex items-center justify-center text-secondary">
+                  <i class="fa fa-home text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium group-hover:text-secondary transition-colors">南区宿舍</h4>
+                  <p class="text-xs text-dark/60">学生宿舍区，配备独立卫生间和空调</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 中心食堂 -->
+            <div class="p-2 transition-shadow cursor-pointer group building-item" data-name="中心食堂">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded bg-yellow-500/10 flex items-center justify-center text-yellow-500">
+                  <i class="fa fa-cutlery text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-medium group-hover:text-yellow-500 transition-colors">中心食堂</h4>
+                  <p class="text-xs text-dark/60">校园主要食堂之一，提供各类美食</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!-- 右侧内容区 - 占3/4宽度，顶部对齐 -->
+      <div class="w-full md:w-3/4 space-y-8">
+        <!-- 2D地图容器 -->
+        <div class="relative bg-white rounded-xl shadow-lg overflow-hidden">
+          <!-- 地图图例 -->
+          <div class="absolute top-0 left-0 bg-white/90 backdrop-blur-sm rounded-lg shadow-md p-3 z-10 mt-4 ml-4">
+            <h3 class="font-semibold mb-2 text-sm">图例</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex items-center">
+                <span class="w-3 h-3 rounded-full bg-primary inline-block mr-2"></span>
+                <span>教学楼</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 rounded-full bg-secondary inline-block mr-2"></span>
+                <span>宿舍</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block mr-2"></span>
+                <span>食堂</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 rounded-full bg-purple-500 inline-block mr-2"></span>
+                <span>图书馆</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 rounded-full bg-red-500 inline-block mr-2"></span>
+                <span>体育馆</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 rounded-full bg-pink-500 inline-block mr-2"></span>
+                <span>大门</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-3 h-3 rounded-full bg-cyan-600 inline-block mr-2"></span>
+                <span>其他</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 2D地图背景 -->
+          <div class="relative w-full">
+            <img src="static/image/scuec_map.png" alt="中南民族大学校区地图" class="w-full h-auto transform scale-120 origin-top-left">
+            
+            <!-- 地图标记点 -->
+
+            <div class="marker-container absolute top-[60%] left-[50%]" data-name="双子塔" data-type="图书馆" data-img="D:/image/双子塔.jpeg">
+              <div class="map-marker bg-purple-500"></div>
+              <div class="tooltip">
+                <h4 class="font-semibold text-primary">双子塔</h4>
+                <p class="text-xs text-dark/70 mb-1">图书馆</p>
+                <img src="static/image/双子塔.jpeg" alt="双子塔缩略图" class="w-full h-24 object-cover rounded">
+              </div>
+            </div>
+
+        <div class="marker-container absolute top-[59%] left-[65%]" data-name="9号楼" data-type="教学楼" data-img="static/image/9号楼.jpeg">
+          <div class="map-marker bg-primary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-primary">9号楼</h4>
+            <p class="text-xs text-dark/70 mb-1">教学楼</p >
+            <img src="static/image/9号楼.jpeg" alt="9号楼缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+        
+        <div class="marker-container absolute top-[57%] left-[69%]" data-name="11号楼" data-type="教学楼" data-img="static/image/学术会堂.jpeg">
+          <div class="map-marker bg-primary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-primary">11号楼</h4>
+            <p class="text-xs text-dark/70 mb-1">教学楼</p >
+            <img src="static/image/学术会堂.jpeg" alt="11号楼缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+        
+	<div class="marker-container absolute top-[70%] left-[69%]" data-name="10号楼" data-type="教学楼" data-img="static/image/10号楼.jpeg">
+          <div class="map-marker bg-primary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-primary">10号楼</h4>
+            <p class="text-xs text-dark/70 mb-1">教学楼</p >
+            <img src="static/image/10号楼.jpeg" alt="10号楼缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+        
+	<div class="marker-container absolute top-[68%] left-[78%]" data-name="15号楼" data-type="教学楼" data-img="static/image/15号楼.jpeg">
+          <div class="map-marker bg-primary"></div>
+          <div class="tooltip" style="transform: translateX(-20%);">
+            <h4 class="font-semibold text-primary">15号楼</h4>
+            <p class="text-xs text-dark/70 mb-1">教学楼</p >
+            <img src="static/image/15号楼.jpeg" alt="15号楼缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[58.5%] left-[69.5%]" data-name="学术会堂" data-type="教学楼" data-img="static/image/\学术会堂.jpeg">
+          <div class="map-marker bg-primary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-dark">学术会堂</h4>
+           <p class="text-xs text-dark/70 mb-1">教学楼</p >
+           <img src="static/image/学术会堂.jpeg" alt="学术会堂缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[72%] left-[13%]" data-name="南区分馆" data-type="图书馆" data-img="static/image/南区分馆.jpeg">
+          <div class="map-marker bg-purple-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-purple-500">南区分馆</h4>
+            <p class="text-xs text-dark/70 mb-1">图书馆</p >
+            <img src="static/image/南区分馆.jpeg" alt="南区分馆缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+	
+        <div class="marker-container absolute top-[67%] left-[47%]" data-name="南书院" data-type="图书馆" data-img="static/image/南书院.jpeg">
+          <div class="map-marker bg-purple-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-primary">南书院</h4>
+            <p class="text-xs text-dark/70 mb-1">图书馆</p >
+            <img src="static/image/南书院.jpeg" alt="南书院缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[67%] left-[53%]" data-name="北书院" data-type="图书馆" data-img="static/image/北书院.jpeg">
+          <div class="map-marker bg-purple-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-primary">北书院</h4>
+            <p class="text-xs text-dark/70 mb-1">图书馆</p >
+            <img src="static/image/北书院.jpeg" alt="北书院缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[80%] left-[27%]" data-name="体育馆" data-type="体育馆" data-img="static/image/体育馆.jpeg">
+          <div class="map-marker bg-red-500"></div>
+          <div class="tooltip" style="transform: translateY(-20%);">
+            <h4 class="font-semibold text-red-500">体育馆</h4>
+            <p class="text-xs text-dark/70 mb-1">体育馆</p >
+            <img src="static/image/体育馆.jpeg" alt="体育馆缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+
+        <!-- 更多标记点... -->
+        <!-- 食堂-->
+        <div class="marker-container absolute top-[65.5%] left-[25%]" data-name="一食堂" data-type="" data-img="static/image/一食堂.jpeg">
+          <div class="map-marker bg-yellow-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-yellow-500">一食堂</h4>
+           <p class="text-xs text-dark/70 mb-1">食堂</p >
+           <img src="static/image/一食堂.jpeg" alt="一食堂缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+        
+        <div class="marker-container absolute top-[65.5%] left-[17%]" data-name="二食堂" data-type="食堂" data-img="static/image/二食堂.jpeg">
+          <div class="map-marker bg-yellow-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-yellow-500">二食堂</h4>
+           <p class="text-xs text-dark/70 mb-1">食堂</p >
+           <img src="static/image/二食堂.jpeg" alt="二食堂缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[65.7%] left-[12.5%]" data-name="三食堂" data-type="食堂" data-img="static/image/三食堂.jpeg">
+          <div class="map-marker bg-yellow-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-yellow-500">三食堂</h4>
+           <p class="text-xs text-dark/70 mb-1">食堂</p >
+           <img src="static/image/三食堂.jpeg" alt="三食堂缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[72.5%] left-[17%]" data-name="四食堂" data-type="食堂" data-img="static/image/四食堂.jpeg">
+          <div class="map-marker bg-yellow-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-yellow-500">四食堂</h4>
+           <p class="text-xs text-dark/70 mb-1">食堂</p >
+           <img src="static/image/四食堂.jpeg" alt="四食堂缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[82%] left-[69%]" data-name="中心食堂" data-type="食堂" data-img="static/image/中心食堂.jpeg">
+          <div class="map-marker bg-yellow-500"></div>
+          <div class="tooltip" style="transform: translateY(-40%);">
+            <h4 class="font-semibold text-yellow-500">中心食堂</h4>
+           <p class="text-xs text-dark/70 mb-1">食堂</p >
+           <img src="static/image/中心食堂.jpeg" alt="中心食堂缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[83.5%] left-[37.5%]" data-name="南湖园餐厅" data-type="食堂" data-img="static/image/南湖园餐厅.jpeg">
+          <div class="map-marker bg-yellow-500"></div>
+          <div class="tooltip" style="transform: translateY(-50%);">
+            <h4 class="font-semibold text-yellow-500">南湖园餐厅</h4>
+           <p class="text-xs text-dark/70 mb-1">食堂</p >
+           <img src="static/image/南湖园餐厅.jpeg" alt="南湖园餐厅缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <!-- 宿舍-->
+        <div class="marker-container absolute top-[72%] left-[24%]" data-name="南区学生宿舍1栋" data-type="宿舍" data-img="static/image/1.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-secondary">南区学生宿舍1栋</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/1.jpeg" alt="南区学生宿舍1栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[71.5%] left-[21.7%]" data-name="南区学生宿舍5栋" data-type="宿舍" data-img="static/image/5.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-secondary">南区学生宿舍5栋</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/5.jpeg" alt="南区学生宿舍5栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[71.5%] left-[19.7%]" data-name="南区学生宿舍6栋" data-type="宿舍" data-img="static/image/6.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-secondary">南区学生宿舍6栋</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/6.jpeg" alt="南区学生宿舍6栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[85.6%] left-[19.8%]" data-name="南区学生宿舍9栋" data-type="宿舍" data-img="static/image/9.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip" style="transform: translateY(-50%);">
+            <h4 class="font-semibold text-secondary">南区学生宿舍9栋</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/9.jpeg" alt="南区学生宿舍9栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[56.5%] left-[21%]" data-name="南区学生宿舍13栋" data-type="宿舍" data-img="static/image/13.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-secondary">南区学生宿舍13栋</h4>
+           <p class="text-xs text-dark/70 mb-13">宿舍</p >
+           <img src="static/image/13.jpeg" alt="南区学生宿舍13栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[55.5%] left-[19%]" data-name="南区学生宿舍14栋" data-type="宿舍" data-img="static/image/14.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-secondary">南区学生宿舍14栋</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/14.jpeg" alt="南区学生宿舍14栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[77.6%] left-[5%]" data-name="南区学生宿舍25栋" data-type="宿舍" data-img="static/image/25.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip" style="transform: translateY(-30%);">
+            <h4 class="font-semibold text-secondary">南区学生宿舍25栋</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/25.jpeg" alt="南区学生宿舍25栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[51.6%] left-[5.5%]" data-name="南区学生宿舍26栋" data-type="宿舍" data-img="static/image/26.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-secondary">南区学生宿舍26栋</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/26.jpeg" alt="南区学生宿舍26栋缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[85%] left-[94%]" data-name="北区学生公寓" data-type="宿舍" data-img="static/image/北区学生公寓.jpeg">
+          <div class="map-marker bg-secondary"></div>
+          <div class="tooltip" style="left: auto; right: 100%; top: 50%; transform: translateY(-50%);">
+            <h4 class="font-semibold text-secondary">北区学生公寓</h4>
+           <p class="text-xs text-dark/70 mb-1">宿舍</p >
+           <img src="static/image/北区学生公寓.jpeg" alt="北区学生公寓缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <!-- 其他-->
+        <div class="marker-container absolute top-[63%] left-[20%]" data-name="小吃街" data-type="其他" data-img="static/image/小吃街.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-cyan-600">小吃街</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/小吃街.jpeg" alt="小吃街缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[73%] left-[27%]" data-name="大学生活动中心" data-type="其他" data-img="static/image/大学生活动中心.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-cyan-600">大学生活动中心</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/大学生活动中心.jpeg" alt="大学生活动中心缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[88.5%] left-[11%]" data-name="南区操场" data-type="其他" data-img="static/image/南区操场.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip" style="transform: translateY(-60%);">
+            <h4 class="font-semibold text-cyan-600">南区操场</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/南区操场.jpeg" alt="南区操场缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[71.5%] left-[39%]" data-name="南湖操场" data-type="其他" data-img="static/image/南湖操场.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-cyan-600">南湖操场</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/南湖操场.jpeg" alt="南湖操场缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[77%] left-[41%]" data-name="南湖园" data-type="其他" data-img="static/image/南湖园.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip" style="transform: translateY(-20%);">
+            <h4 class="font-semibold text-cyan-600">南湖园</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/南湖园.jpeg" alt="南湖园缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[89%] left-[66%]" data-name="大礼堂" data-type="其他" data-img="static/image/大礼堂.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip" style="transform: translateY(-60%);">
+            <h4 class="font-semibold text-cyan-600">大礼堂</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/大礼堂.jpeg" alt="大礼堂缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[65.7%] left-[8%]" data-name="火之舞广场" data-type="其他" data-img="static/image/火之舞.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-cyan-600">火之舞小吃街</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/火之舞.jpeg" alt="火之舞广场缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[76%] left-[53.7%]" data-name="校训石" data-type="其他" data-img="static/image/校训石.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-cyan-600">校训石</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/校训石.jpeg" alt="校训石缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[45%] left-[23.5%]" data-name="民族学博物馆" data-type="其他" data-img="static/image/民族学博物馆.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-cyan-600">民族学博物馆</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/民族学博物馆.jpeg" alt="民族学博物馆缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[29%] left-[35%]" data-name="南湖" data-type="其他" data-img="static/image/南湖.jpeg">
+          <div class="map-marker bg-cyan-600"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-cyan-600">南湖</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/南湖.jpeg" alt="南湖缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <!-- 大门-->
+        <div class="marker-container absolute top-[96%] left-[50%]" data-name="正门" data-type="大门" data-img="static/image/正门.jpeg">
+          <div class="map-marker bg-pink-500"></div>
+          <div class="tooltip" style="transform: translateY(-100%);">
+            <h4 class="font-semibold text-pink-500">正门</h4>
+           <p class="text-xs text-dark/70 mb-1">大门</p >
+           <img src="static/image/正门.jpeg" alt="正门缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[96%] left-[32%]" data-name="南一门" data-type="大门" data-img="static/image/南一门.jpeg">
+          <div class="map-marker bg-pink-500"></div>
+          <div class="tooltip" style="transform: translateY(-100%);">
+            <h4 class="font-semibold text-pink-500">南一门</h4>
+           <p class="text-xs text-dark/70 mb-1">大门</p >
+           <img src="static/image/南一门.jpeg" alt="南一门缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[65.7%] left-[3%]" data-name="南二门" data-type="大门" data-img="static/image/南二门.jpeg">
+          <div class="map-marker bg-pink-500"></div>
+          <div class="tooltip">
+            <h4 class="font-semibold text-pink-500">南二门</h4>
+           <p class="text-xs text-dark/70 mb-1">其他</p >
+           <img src="static/image/南二门.jpeg" alt="南二门缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+
+        <div class="marker-container absolute top-[96%] left-[78.5%]" data-name="北二门" data-type="大门" data-img="static/image/北二门.jpeg">
+          <div class="map-marker bg-pink-500"></div>
+          <div class="tooltip" style="transform: translate(-50%,-100%);">
+            <h4 class="font-semibold text-pink-500">北二门</h4>
+           <p class="text-xs text-dark/70 mb-1">大门</p >
+           <img src="static/image/北二门.jpeg" alt="北二门缩略图" class="w-full h-24 object-cover rounded">
+          </div>
+        </div>
+      </div>
+    </div>
+</main>
+    
+  <!-- 建筑物详情模态框 -->
+  <div class="modal-backdrop" id="building-modal">
+    <div class="modal-content">
+      <div class="p-4 border-b flex justify-between items-center">
+        <h3 class="text-xl font-bold" id="modal-title">建筑物名称</h3>
+        <button class="text-dark/50 hover:text-dark text-xl close-modal">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto max-h-[60vh]">
+        <p class="text-dark/70 mb-4" id="modal-type">建筑物类型</p>
+        <div class="flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden mb-4">
+          <img src="" alt="建筑物大图" id="modal-image" class="max-h-[40vh] object-contain">
+        </div>
+        <p class="text-dark/80" id="modal-description">建筑物描述...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center space-x-2 mb-2">
+            <i class="fa fa-map-marker text-primary text-xl"></i>
+            <span class="font-bold">中南民族大学校园地图</span>
+          </div>
+          <p class="text-white/70 text-sm">探索校园，发现更多</p>
+        </div>
+        
+        <div class="flex space-x-6">
+          <a href="#" class="text-white/70 hover:text-primary transition-colors">
+            <i class="fa fa-weixin text-xl"></i>
+          </a>
+          <a href="#" class="text-white/70 hover:text-primary transition-colors">
+            <i class="fa fa-weibo text-xl"></i>
+          </a>
+          <a href="#" class="text-white/70 hover:text-primary transition-colors">
+            <i class="fa fa-instagram text-xl"></i>
+          </a>
+          <a href="#" class="text-white/70 hover:text-primary transition-colors">
+            <i class="fa fa-youtube-play text-xl"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="border-t border-white/10 mt-6 pt-6 text-center text-white/50 text-sm">
+        <p>© 2025 中南民族大学. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 模态框功能
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取地图标记和建筑列表项
+      const markers = document.querySelectorAll('.marker-container');
+      const buildingItems = document.querySelectorAll('.building-item');
+      
+      // 获取模态框元素
+      const modalBackdrop = document.querySelector('.modal-backdrop');
+      const modalTitle = document.getElementById('modal-title');
+      const modalType = document.getElementById('modal-type');
+      const modalImage = document.getElementById('modal-image');
+      const modalDescription = document.getElementById('modal-description');
+      const closeModal = document.querySelector('.close-modal');
+      
+      // 为每个地图标记添加点击事件
+      markers.forEach(marker => {
+        marker.addEventListener('click', function() {
+          const name = this.getAttribute('data-name');
+          const type = this.getAttribute('data-type');
+          const img = this.getAttribute('data-img');
+          
+          updateModalContent(name, type, img);
+          modalBackdrop.classList.add('active');
+        });
+      });
+      
+      // 为每个建筑列表项添加点击事件
+      buildingItems.forEach(item => {
+        item.addEventListener('click', function() {
+          const name = this.getAttribute('data-name');
+          // 查找对应的标记点获取完整信息
+          const marker = document.querySelector(`.marker-container[data-name="${name}"]`);
+          if (marker) {
+            const type = marker.getAttribute('data-type');
+            const img = marker.getAttribute('data-img');
+            updateModalContent(name, type, img);
+            modalBackdrop.classList.add('active');
+          }
+        });
+      });
+      
+      // 更新模态框内容
+      function updateModalContent(name, type, img) {
+        modalTitle.textContent = name;
+        modalType.textContent = type;
+        modalImage.src = img;
+        modalImage.alt = `${name}图片`;
+        
+        // 设置建筑描述
+        switch(name) {
+          case '11号楼':
+            modalDescription.textContent = '11号楼是学校的主要教学楼之一，设有多个多媒体教室和大型阶梯教室，主要用于公共课程和大型讲座。楼内配备了现代化的教学设备，为师生提供良好的教学环境。';
+            break;
+          case '9号楼':
+            modalDescription.textContent = '9号楼是一座综合性教学楼，是计算机科学学院和数学与统计学学院的办公地点。楼内配备了先进的计算机实验室、数据分析实验室和科研设施，支持各类专业教学和研究活动。';
+            break;
+          case '图书馆':
+            modalDescription.textContent = '中南民族大学图书馆馆藏丰富，涵盖人文社科、自然科学等多个领域，总藏书量达百万余册。馆内提供舒适的自习空间、电子资源查询区和学术研讨室，是学生学习和研究的重要场所。';
+            break;
+          case '体育馆':
+            modalDescription.textContent = '学校体育馆设施齐全，包括标准篮球场、羽毛球场、乒乓球场和现代化健身房。馆内定期举办各类体育赛事和健身课程，同时也为学生体育社团活动提供场地支持。';
+            break;
+          case '南区宿舍':
+            modalDescription.textContent = '南区宿舍区环境整洁，每间宿舍配备独立卫生间、空调和高速网络接口。宿舍周边配套设施完善，包括便利店、理发店和自助洗衣房，为学生提供便利的生活条件。';
+            break;
+          case '中心食堂':
+            modalDescription.textContent = '中心食堂是校园主要食堂之一，共设三层，提供全国各地风味美食，包括川菜、粤菜、东北菜和清真餐等多个窗口。食堂严格执行食品安全标准，每日提供新鲜健康的食材。';
+           default:
+             if (type === '其他') {
+               modalDescription.textContent = '';
+             }else if (type === '教学楼') {
+               modalDescription.textContent = '这是中南民族大学的教学楼，是供师生教学、实验及学术研讨的场所。'; 
+             } else if (type === '宿舍') {
+               modalDescription.textContent = '这是中南民族大学的宿舍，是学生休息、生活及日常起居的住宿空间。'; 
+             } else if (type === '食堂') {
+               modalDescription.textContent = '这是中南民族大学的食堂，为师生提供各类餐饮及就餐服务。'; 
+             } else if (type === '图书馆') {
+               modalDescription.textContent = '这是中南民族大学的图书馆，收藏图书文献，提供借阅、自习及信息查询服务。'; 
+             } else{
+               modalDescription.textContent = '这是中南民族大学的大门，是校园的出入口，承担人员、车辆进出管理及形象展示功能。'; 
+             } 
+             break;
+           }
+      }
+      
+      // 关闭模态框
+      closeModal.addEventListener('click', () => {
+        modalBackdrop.classList.remove('active');
+      });
+      
+      modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) {
+          modalBackdrop.classList.remove('active');
+        }
+      });
+      
+      // 按ESC键关闭模态框
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalBackdrop.classList.contains('active')) {
+          modalBackdrop.classList.remove('active');
+        }
+      });
+    }
+    );
+
+document.addEventListener('DOMContentLoaded', function() {
+  // 精准定位导航链接（通过文字内容查找）
+  const navLinks = document.querySelectorAll('nav a');
+  let campusInfoLink, buildingListLink, contactLink;
+  
+  navLinks.forEach(link => {
+    const text = link.textContent.trim();
+    if (text === '校园简介') campusInfoLink = link;
+    else if (text === '建筑列表') buildingListLink = link;
+    else if (text === '联系我们') contactLink = link;
+  });
+  
+  // 定位建筑物列表（通过父容器定位，确保准确性）
+  const buildingList = document.querySelector('.grid.grid-cols-1.gap-4');
+  // 为建筑物列表添加初始边框（增强闪烁对比）
+  if (buildingList) buildingList.style.border = '1px solid transparent';
+  
+  // 修复链接默认跳转问题（移除href="#"的影响）
+  [campusInfoLink, buildingListLink, contactLink].forEach(link => {
+    if (link) {
+      link.href = 'javascript:void(0);'; // 阻止默认跳转
+      link.style.cursor = 'pointer'; // 显示手型光标
+    }
+  });
+  
+// 校园简介点击事件（强制创建弹窗）
+if (campusInfoLink) {
+  campusInfoLink.addEventListener('click', function() {
+    // 创建半透明遮罩层
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    overlay.style.zIndex = '9998';
+    
+    // 创建弹窗内容
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.padding = '30px';
+    modal.style.backgroundColor = 'white';
+    modal.style.borderRadius = '8px';
+    modal.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+    modal.style.zIndex = '9999';
+    modal.style.width = '800px'; // 新增：设置弹窗宽度
+    modal.innerHTML = `
+      <div style="text-align:center; margin-bottom:20px;">
+        <h3 style="font-size:24px; font-weight:bold; color:#165DFF; margin:0;">校园简介</h3>
+        <img src="static/image/南湖.jpeg" alt="中南民族大学校园风光" 
+             style="width:100%; height:200px; object-fit:cover; border-radius:6px; margin-top:0; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+      </div>
+      <p style="font-size:16px; line-height:1.8; margin-bottom:30px;">中南民族大学（South-Central Minzu University）坐落于湖北省武汉市民族大道182号，系中华人民共和国国家民族事务委员会直属高校，位列湖北省“国内一流大学建设高校”、“少数民族高层次骨干人才计划”资格高校、全国深化创新创业教育改革示范高校、中国高校行星科学联盟；学校系中华人民共和国国家民族事务委员会、教育部、中国科学院、湖北省人民政府、武汉市人民政府五方共建高校。
+学校前身为1941年在延安创办的民族学院，1951年，依托中原大学在武汉洪山南麓创办中央民族学院中南分院；1952年11月，经中南军政委员会批准，将中央民族学院中南分院改名为中南民族学院；1985年，学校招收首批硕士研究生；2002年3月，学校正式更名为中南民族大学；2006年，学校正式获得博士学位授予权；2010年，学校首次实现拥有56个民族学生的目标。中南民族大学对外交流范围涵盖美国、英国、法国、澳大利亚、加拿大、俄罗斯、德国、日本、韩国、巴基斯坦、哈萨克斯坦、吉尔吉斯斯坦等数十个国家。
+截至2025年5月，学校占地1700余亩，校舍面积116万余平方米；设有22个二级学院，开设本科招生专业72个；拥有26个学术型一级学科硕士点，26个专业型硕士点，6个一级学科博士点，3个博士后科研流动站；有教职工2100余人，有全日制博士、硕士、本科、预科等各类学生3万余人。</p>
+      <div style="text-align:center;"> <!-- 新增：按钮容器居中 -->
+        <button style="padding:10px 25px; background:#165DFF; color:white; border:none; border-radius:4px; cursor:pointer; font-size:16px;">关闭</button>
+      </div>
+    `;
+    
+    // 关闭按钮事件
+    modal.querySelector('button').addEventListener('click', function() {
+      overlay.remove();
+      modal.remove();
+    });
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(modal);
+  });
+}
+  
+  // 联系我们点击事件
+  if (contactLink) {
+    contactLink.addEventListener('click', function() {
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      overlay.style.zIndex = '9998';
+      
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      modal.style.padding = '30px';
+      modal.style.backgroundColor = 'white';
+      modal.style.borderRadius = '8px';
+      modal.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+      modal.style.zIndex = '9999';
+      modal.innerHTML = `
+        <h3 style="margin-top:0; color:#165DFF;">联系我们</h3>
+        <p style="font-size:16px; line-height:1.6;">联系电话：None</p>
+        <button style="margin-top:20px; padding:8px 20px; background:#165DFF; color:white; border:none; border-radius:4px; cursor:pointer;">关闭</button>
+      `;
+      
+      document.body.appendChild(overlay);
+      document.body.appendChild(modal);
+      modal.querySelector('button').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        document.body.removeChild(overlay);
+      });
+    });
+  }
+  
+// 建筑列表点击事件（优化闪烁效果）
+if (buildingListLink && buildingList) {
+  buildingListLink.addEventListener('click', function() {
+    // 添加过渡动画
+    buildingList.style.transition = 'all 0.3s ease';
+    
+    // 闪烁效果（白色基调，通过阴影和边框增强视觉反馈）
+    let count = 0;
+    const originalBoxShadow = buildingList.style.boxShadow;
+    const originalBorder = buildingList.style.border;
+    
+    const flash = setInterval(() => {
+      if (count % 2 === 0) {
+        // 高亮状态（白色基调，通过阴影和边框增强）
+        buildingList.style.boxShadow = '0 0 15px rgba(22, 93, 255, 0.5)'; // 蓝色发光效果
+        buildingList.style.border = '2px solid rgba(22, 93, 255, 0.7)'; // 半透明蓝色边框
+        buildingList.style.transform = 'scale(1.01)'; // 轻微放大
+      } else {
+        // 恢复状态
+        buildingList.style.boxShadow = originalBoxShadow;
+        buildingList.style.border = originalBorder;
+        buildingList.style.transform = 'scale(1)';
+      }
+      count++;
+      if (count >= 4) { // 闪烁2次（高亮、常态、高亮、常态）
+        clearInterval(flash);
+        // 最终恢复原状
+        buildingList.style.boxShadow = originalBoxShadow;
+        buildingList.style.border = originalBorder;
+        buildingList.style.transform = 'scale(1)';
+        buildingList.style.transition = ''; // 移除过渡效果
+      }
+    }, 300);
+    
+    // 滚动到位置
+    setTimeout(() => {
+      buildingList.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }, 100);
+  });
+}
+})
+</script>
+</body>
+</html>

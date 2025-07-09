@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中南民大智能问答助手</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6c91c0;
+            --accent-color: #ff6b6b;
+            --light-color: #f5f7fa;
+            --dark-color: #2c3e50;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --border-radius: 16px;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: rgba(245, 247, 250, 0.85);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 100%;  /* 改为100%填满宽度 */
+            margin: 0;
+            padding: 0;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 0;  /* 移除圆角 */
+            box-shadow: none;  /* 移除阴影 */
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(8px);
+            border: none;  /* 移除边框 */
+            height: 100vh;  /* 填满整个视口高度 */
+        }
+        
+        .header {
+            background: linear-gradient(to right, rgba(74, 111, 165, 0.9), rgba(108, 145, 192, 0.9));
+            color: white;
+            padding: 15px 20px;  /* 减少内边距 */
+            position: relative;
+        }
+        
+        .chat-area {
+            padding: 15px;  /* 减少内边距 */
+            height: calc(100% - 200px);  /* 动态计算高度 */
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-container {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .logo-container img {
+            max-height: 50px;
+            max-width: 50px;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            margin-top: 8px;
+            font-size: 16px;
+            opacity: 0.95;
+            max-width: 600px;
+            line-height: 1.5;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+        
+        .welcome {
+            padding: 20px 30px;
+            background: rgba(245, 247, 250, 0.85);
+            border-bottom: 1px solid rgba(234, 234, 234, 0.6);
+        }
+        
+        .welcome-text {
+            font-size: 16px;
+            color: var(--dark-color);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .example-questions {
+            background: rgba(240, 244, 248, 0.85);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .examples-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .example {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin: 5px 8px 5px 0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(224, 230, 237, 0.5);
+        }
+        
+        .example:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            border-color: var(--secondary-color);
+            background: rgba(245, 249, 255, 0.95);
+        }
+        
+        .chat-area {
+            padding: 30px;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .question-input {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(219, 225, 232, 0.7);
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .question-input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 4px 12px rgba(74, 111, 165, 0.2);
+            outline: none;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(74, 111, 165, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(74, 111, 165, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .clear-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--dark-color);
+            border: 1px solid rgba(219, 225, 232, 0.7);
+            border-radius: 50px;
+            padding: 0 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .clear-btn:hover {
+            background: rgba(248, 250, 253, 0.95);
+            border-color: rgba(193, 203, 216, 0.8);
+        }
+        
+        .answer-output {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            padding: 25px;
+            min-height: 200px;
+            border: 1px solid rgba(224, 230, 237, 0.5);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--dark-color);
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        .answer-output:empty::before {
+            content: "等待您提出问题...";
+            color: #a0aec0;
+            font-style: italic;
+        }
+        
+        .user-msg {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: rgba(240, 247, 255, 0.85);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .assistant-msg {
+            margin-top: 20px;
+            padding: 15px 20px;
+            background: rgba(249, 249, 249, 0.85);
+            border-radius: 10px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background: rgba(245, 247, 250, 0.85);
+            border-top: 1px solid rgba(234, 234, 234, 0.6);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+        
+        .powered-by {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .footer-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .footer-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--dark-color);
+            border: 1px solid rgba(219, 225, 232, 0.7);
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .footer-btn:hover {
+            background: rgba(248, 250, 253, 0.95);
+            border-color: rgba(193, 203, 216, 0.8);
+        }
+        
+        .thinking {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #718096;
+            font-style: italic;
+            background: rgba(249, 249, 249, 0.85);
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        
+        .thinking::after {
+            content: ".";
+            animation: dots 1.5s infinite;
+            width: 10px;
+            display: inline-block;
+            text-align: left;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+        
+        .timestamp {
+            font-size: 12px;
+            color: #718096;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .response-time {
+            font-size: 14px;
+            color: #718096;
+            text-align: right;
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-title">
+                <div class="logo-container">
+                    <img src="static/image/scuec_logo.ico" alt="Logo">
+                </div>
+                <div class="title">小塔 - 智能问答助手</div>
+            </div>
+            <div class="subtitle">您的专属校园助手，随时解答校园问题</div>
+        </div>
+        <div class="welcome">
+            <div class="welcome-text">您好！我是小塔，可以回答您关于校园生活的任何问题</div>
+            <div class="example-questions">
+                <div class="examples-title">您可以尝试问我：</div>
+                <div class="example">图书馆开放时间</div>
+                <div class="example">校医院地址</div>
+                <div class="example">在校学位费与住宿费</div>
+                <div class="example">校园卡充值方式</div>
+            </div>
+        </div>
+        <div class="chat-area">
+            <div class="input-area">
+                <input type="text" class="question-input" placeholder="请输入您的问题...">
+                <button class="submit-btn">发送</button>
+                <button class="clear-btn">清除</button>
+            </div>
+            <div class="answer-output">
+                <div class="assistant-msg">
+                    <div><strong>🤖 小塔</strong> · <span class="timestamp">10:25</span></div>
+                    <div style="margin-top: 8px;">您好！我是小塔，中南民族大学的智能问答助手。我可以回答您关于学校生活、课程安排、校园设施等各种问题。欢迎随时向我提问！</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="powered-by">Powered by 中南民族大学 & ErnieBot AI</div>
+            <div class="footer-buttons">
+                <button class="footer-btn">帮助中心</button>
+                <button class="footer-btn">问题反馈</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 初始化示例问题监听
+        function setupExampleListeners() {
+            document.querySelectorAll('.example').forEach(element => {
+                element.addEventListener('click', function() {
+                    const question = this.textContent;
+                    const input = document.querySelector('.question-input');
+                    if (input) {
+                        input.value = question;
+                        input.focus();
+                    }
+                });
+            });
+        }
+        
+        // 提交问题到后端API
+        async function submitQuestion(question) {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('请求出错:', error);
+                return { answer: "抱歉，处理问题时遇到错误: " + error.message };
+            }
+        }
+        
+        // 提交问题
+        document.querySelector('.question-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.querySelector('.submit-btn').click();
+            }
+        });
+        document.querySelector('.submit-btn').addEventListener('click', async function() {
+            const input = document.querySelector('.question-input');
+            const question = input.value.trim();
+            const answerOutput = document.querySelector('.answer-output');
+            
+            if (question) {
+                // 添加用户消息
+                const userMsg = document.createElement('div');
+                userMsg.className = 'user-msg';
+                userMsg.innerHTML = `
+                    <div><strong>👤 您</strong> · <span class="timestamp">${getCurrentTime()}</span></div>
+                    <div style="margin-top: 8px;">${question}</div>
+                `;
+                answerOutput.appendChild(userMsg);
+                
+                // 显示思考状态
+                const thinkingMsg = document.createElement('div');
+                thinkingMsg.className = 'thinking';
+                thinkingMsg.innerHTML = '<strong>小塔:</strong> 正在思考中';
+                answerOutput.appendChild(thinkingMsg);
+                
+                // 清空输入框
+                input.value = '';
+                
+                try {
+                    // 调用API获取回答
+                    const startTime = Date.now();
+                    const response = await submitQuestion(question);
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    
+                    // 移除思考消息
+                    thinkingMsg.remove();
+                    
+                    // 添加AI回复
+                    const aiMsg = document.createElement('div');
+                    aiMsg.className = 'assistant-msg';
+                    aiMsg.innerHTML = `
+                        <div><strong>🤖 小塔</strong> · <span class="timestamp">${getCurrentTime()}</span></div>
+                        <div style="margin-top: 8px;">${response.answer}</div>
+                        <div class="response-time">回答耗时: ${elapsed.toFixed(2)}秒</div>
+                    `;
+                    answerOutput.appendChild(aiMsg);
+                    
+                } catch (error) {
+                    thinkingMsg.remove();
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'assistant-msg';
+                    errorMsg.innerHTML = `
+                        <div><strong>🤖 小塔</strong> · <span class="timestamp">${getCurrentTime()}</span></div>
+                        <div style="margin-top: 8px;">抱歉，处理问题时遇到错误: ${error.message}</div>
+                    `;
+                    answerOutput.appendChild(errorMsg);
+                }
+                
+                // 滚动到底部
+                answerOutput.scrollTop = answerOutput.scrollHeight;
+            }
+        });
+        
+        // 清除功能
+        document.querySelector('.clear-btn').addEventListener('click', function() {
+            const answerOutput = document.querySelector('.answer-output');
+            answerOutput.innerHTML = `
+                <div class="assistant-msg">
+                    <div><strong>🤖 小塔</strong> · <span class="timestamp">${getCurrentTime()}</span></div>
+                    <div style="margin-top: 8px;">对话已清除，请问我新的问题吧！</div>
+                </div>
+            `;
+        });
+        
+        // 获取当前时间
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+
+        
+        // 初始设置
+        setTimeout(setupExampleListeners, 1000);
+    </script>
+</body>
+</html>
+
+<style>
+    /* 修改容器样式 */
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: #f7f7f8;
+        overflow: hidden;
+    }
+
+    /* 修改聊天区域样式 */
+    .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    /* 修改消息区域样式 */
+    .answer-output {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background: #f7f7f8;
+        max-height: calc(100vh - 150px); /* 确保有足够空间显示内容 */
+    }
+
+    /* 修改输入区域样式 */
+    .input-area {
+        padding: 12px 16px;
+        background: white;
+        border-top: 1px solid #e5e5e6;
+        display: flex;
+        gap: 12px;
+        position: sticky;
+        bottom: 0;
+    }
+
+    /* 确保html和body填满高度 */
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+</style>
